@@ -2,8 +2,8 @@ from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from app.models import UserEvent, EventSlot
-from app.serializers import UserEventSerializer, EventSlotSerializer, UserSerializer
+from app.models import UserEvent, EventSlot, UserBooking
+from app.serializers import UserEventSerializer, EventSlotSerializer, UserSerializer, UserBookingSerializer
 
 from django.contrib.auth import authenticate
 
@@ -74,4 +74,30 @@ class EventSlotHours(generics.ListCreateAPIView):
         return queryset
 
     serializer_class = EventSlotSerializer
+
+
+# add check for valid time
+class BookEvent(generics.CreateAPIView):
+    serializer_class = UserBookingSerializer
+
+    def post(self, request):
+        data = {
+            "user_id": request.user.id,
+            "event_id": request.data.get("event_id"),
+            "slot_time": request.data.get("slot_time")
+        }
+        serializer = UserBookingSerializer(data=data)
+        if serializer.is_valid():
+            vote = serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserBookingList(generics.ListCreateAPIView):
+    def get_queryset(self):
+        queryset = UserBooking.objects.filter(user_id=self.request.user)
+        return queryset
+
+    serializer_class = UserBookingSerializer
 
