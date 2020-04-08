@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 # Create your models here.
 class UserEvent(models.Model):
-    name = models.CharField(max_length=50, blank=False, unique=True)
+    name = models.CharField(max_length=50, blank=False)
     description = models.CharField(max_length=200, blank=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -12,6 +12,9 @@ class UserEvent(models.Model):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        unique_together = ("name", "created_by")
 
 
 class EventSlot(models.Model):
@@ -21,7 +24,7 @@ class EventSlot(models.Model):
     end_time = models.DateTimeField(blank=False)
 
     def __str__(self):
-        return "{start_time = " + self.start_time + ", end_time" + self.end_time
+        return "{event_id = " + self.event_id + ", start_time = " + self.start_time + ", end_time" + self.end_time + "}"
 
 
 class UserBooking(models.Model):
@@ -31,4 +34,7 @@ class UserBooking(models.Model):
 
     def __str__(self):
         return "{used_id = " + self.user_id + ", event_id" + self.event_id + ", slot_time" + self.slot_time
+
+    class Meta:
+        unique_together = ("user_id", "event_id")
 
